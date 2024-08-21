@@ -24,6 +24,11 @@ public class EventController {
         return ResponseEntity.status(HttpStatus.CREATED).body(event);
     }
 
+    @GetMapping
+    public List<Event> getAllEvents() {
+        return eventRepository.findAll();
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<Event> getEventById(@PathVariable Long id) {
         Optional<Event> event = eventRepository.findById(id);
