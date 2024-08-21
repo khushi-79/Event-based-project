@@ -3,6 +3,7 @@ package com.eventbasedarchitechture.event_based;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.Query;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -10,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+@Slf4j
 @Service
 public class EventConsumerService {
 
@@ -30,7 +32,10 @@ public class EventConsumerService {
                 // Update event status
                 event.setStatus(Event.EventStatus.PROCESSED);
                 eventRepository.save(event);
+
+                log.info("Event processed successfully: {}", event.getId());
             } catch (Exception e) {
+                log.error("Failed to process event: {}",event.getId(),e);
                 // Handle failure
                 event.setStatus(Event.EventStatus.FAILED);
                 eventRepository.save(event);
@@ -46,8 +51,4 @@ public class EventConsumerService {
         return query.getResultList();
     }
 
-//    private void processEvent(Event event) {
-//        // Simulate processing logic
-//        System.out.println("Processing event: " + event.getPayload());
-//    }
 }

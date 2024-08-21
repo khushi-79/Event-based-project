@@ -48,6 +48,7 @@ public class EventConsumerServiceTest {
         List<Event> events = eventRepository.findAll();
         assertEquals(2, events.size());
         assertEquals(Event.EventStatus.PROCESSED, events.get(0).getStatus());
+        System.out.println(event1.getStatus());
         assertEquals(Event.EventStatus.PROCESSED, events.get(1).getStatus());
 
 
