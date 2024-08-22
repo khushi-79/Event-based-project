@@ -18,6 +18,10 @@ public class EventController {
     @Autowired
     private EventRepository eventRepository;
 
+    @Autowired
+    private EventConsumerService eventConsumerService;
+
+
     @PostMapping
     public ResponseEntity<Event> createEvent(@RequestBody String payload){
         Event event = eventProducerService.produceEvent(payload);
@@ -26,6 +30,7 @@ public class EventController {
 
     @GetMapping
     public List<Event> getAllEvents() {
+        eventConsumerService.processPendingEvents();
         return eventRepository.findAll();
     }
 
