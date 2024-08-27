@@ -41,10 +41,10 @@ public class EventController {
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
 
-    @PostMapping("/auth")
-    public ResponseEntity<String> authEndpoint(@RequestBody String payload) {
-        return ResponseEntity.ok("Authorized request with payload: " + payload);
-    }
+//    @PostMapping("/auth")
+//    public ResponseEntity<String> authEndpoint(@RequestBody String payload) {
+//        return ResponseEntity.ok("Authorized request with payload: " + payload);
+//    }
 
     @PostMapping("/token")
     public ResponseEntity<String> tokenEndpoint(@RequestBody String payload) {

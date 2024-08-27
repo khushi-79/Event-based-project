@@ -16,7 +16,7 @@ public class Register implements WebMvcConfigurer {
 
     @Override
     public void addInterceptors(InterceptorRegistry registry){
-        registry.addInterceptor(authorizeValidator).addPathPatterns("/events/auth");
+//        registry.addInterceptor(authorizeValidator).addPathPatterns("/events/auth");
         registry.addInterceptor(accessTokenValidator).addPathPatterns("/events/token");
     }
 }
