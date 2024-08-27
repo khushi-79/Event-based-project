@@ -47,7 +47,7 @@ public class EventController {
 //    }
 
     @PostMapping("/token")
-    public ResponseEntity<String> tokenEndpoint(@RequestBody String payload) {
+    public ResponseEntity<String> tokenEndpoint(@RequestParam String payload) {
         return ResponseEntity.ok("Token validated request with payload: " + payload);
     }
 

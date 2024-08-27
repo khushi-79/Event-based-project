@@ -12,21 +12,22 @@ public class AccessTokenValidator implements HandlerInterceptor {
     @Override
     public boolean preHandle(HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull Object handler) throws Exception{
 
-        if(!"GET".equalsIgnoreCase(request.getMethod())){
-            response.setStatus(405);//method not allowed
-            response.getWriter().write("This endpoint supports GET request.");
+        if (!"POST".equalsIgnoreCase(request.getMethod())) {
+            response.setStatus(HttpServletResponse.SC_METHOD_NOT_ALLOWED); // 405 Method Not Allowed
+//            response.getWriter().write("This endpoint only supports PO requests.");
             return false;
         }
 
         String payload = request.getParameter("payload");
+//        String status = request.getParameter("status");
 
         if (payload!=null && !payload.isEmpty()){
-            response.getWriter().write("Events: "+payload+"\n");
-            response.getWriter().write("This payload is returned.");
+//            response.getWriter().write("Events: " + payload + "\n");
+//            response.getWriter().write("This payload is returned.");
             return true;
         }else{
             response.setStatus(403);
-            response.getWriter().write("Payload is missing or empty.");
+//            response.getWriter().write("Payload is missing or empty.");
             return false;
         }
     }
