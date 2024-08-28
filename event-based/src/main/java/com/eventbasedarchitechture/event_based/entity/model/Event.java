@@ -1,4 +1,4 @@
-package com.eventbasedarchitechture.event_based;
+package com.eventbasedarchitechture.event_based.model;
 
 import jakarta.persistence.*;
 

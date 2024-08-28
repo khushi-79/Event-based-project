@@ -1,5 +1,7 @@
-package com.eventbasedarchitechture.event_based;
+package com.eventbasedarchitechture.event_based.services;
 
+import com.eventbasedarchitechture.event_based.entity.repository.EventRepository;
+import com.eventbasedarchitechture.event_based.entity.model.Event;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
