@@ -9,14 +9,12 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 public class Register implements WebMvcConfigurer {
 
     @Autowired
-    private AccessTokenValidator accessTokenValidator;
+    private CheckNullValueValidator payloadCheckValidator;
 
-    @Autowired
-    private AuthorizeValidator authorizeValidator;
 
     @Override
     public void addInterceptors(InterceptorRegistry registry){
-//        registry.addInterceptor(authorizeValidator).addPathPatterns("/events/auth");
-        registry.addInterceptor(accessTokenValidator).addPathPatterns("/events/token");
+//        registry.addInterceptor(checkFailure).addPathPatterns("/events/*");
+        registry.addInterceptor(payloadCheckValidator).addPathPatterns("/events");
     }
 }

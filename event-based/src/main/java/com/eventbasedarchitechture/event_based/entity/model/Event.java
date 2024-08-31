@@ -1,4 +1,4 @@
-package com.eventbasedarchitechture.event_based.model;
+package com.eventbasedarchitechture.event_based.entity.model;
 
 import jakarta.persistence.*;
 
@@ -11,7 +11,8 @@ public class Event {
     public enum EventStatus {
         PENDING,
         PROCESSED,
-        FAILED
+        FAILED,
+        RETRY
     }
 
     @Id
@@ -24,6 +25,26 @@ public class Event {
     private EventStatus status;
 
     private LocalDateTime timestamp;
+
+    public LocalDateTime getRetryTimestamp() {
+        return retryTimestamp;
+    }
+
+    public void setRetryTimestamp(LocalDateTime retryTimestamp) {
+        this.retryTimestamp = retryTimestamp;
+    }
+
+    private LocalDateTime retryTimestamp;
+
+    private String openUrl;
+
+    public String getOpenUrl() {
+        return openUrl;
+    }
+
+    public void setOpenUrl(String openUrl) {
+        this.openUrl = openUrl;
+    }
 
     public Long getId() {
         return id;

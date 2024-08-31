@@ -1,6 +1,6 @@
-package com.eventbasedarchitechture.event_based;
+package com.eventbasedarchitechture.event_based.entity.repository;
 
-import com.eventbasedarchitechture.event_based.model.Event;
+import com.eventbasedarchitechture.event_based.entity.model.Event;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 

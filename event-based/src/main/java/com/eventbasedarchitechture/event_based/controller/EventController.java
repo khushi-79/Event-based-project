@@ -1,11 +1,16 @@
-package com.eventbasedarchitechture.event_based;
+package com.eventbasedarchitechture.event_based.controller;
 
+import com.eventbasedarchitechture.event_based.entity.repository.EventRepository;
+import com.eventbasedarchitechture.event_based.entity.model.Event;
+import com.eventbasedarchitechture.event_based.service.EventConsumerService;
+import com.eventbasedarchitechture.event_based.service.EventProducerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
+import java.util.Map;
 import java.util.Optional;
 import java.util.List;
 
@@ -23,16 +28,53 @@ public class EventController {
     private EventConsumerService eventConsumerService;
 
 
-    @PostMapping
-    public ResponseEntity<Event> createEvent(@RequestBody String payload){
-        Event event = eventProducerService.produceEvent(payload);
-        return ResponseEntity.status(HttpStatus.CREATED).body(event);
+//    @PostMapping
+//    public ResponseEntity<Event> createEvent(@RequestBody String payload){
+//        Event event = eventProducerService.produceEvent(payload);
+//        return ResponseEntity.status(HttpStatus.CREATED).body(event);
+//
+//    }
+//@PostMapping
+//public ResponseEntity<Event> createEvent(@RequestBody Event eventRequest) {
+//    Event event = eventProducerService.produceEvent(
+//            eventRequest.getPayload(),
+//            eventRequest.getOpenUrl()
+//    );
+//    return ResponseEntity.status(HttpStatus.CREATED).body(event);
+//}
 
+    @PostMapping
+    public ResponseEntity<Event> createEvent(
+            @RequestParam(required = false) String payload,
+            @RequestParam(required = false) String openUrl) {
+
+        if (payload == null || payload.isEmpty() || openUrl == null || openUrl.isEmpty()) {
+            return ResponseEntity.badRequest().body(null); // Send 400 response if validation fails
+        }
+
+        Event event = eventProducerService.produceEvent(payload, openUrl);
+        return ResponseEntity.status(HttpStatus.CREATED).body(event);
     }
+
+    @PutMapping("/{id}/retry")
+    public ResponseEntity<Event> updateEventForRetry(@PathVariable Long id, @RequestParam String openUrl) {
+        Optional<Event> optionalEvent = eventRepository.findById(id);
+        if (optionalEvent.isPresent()) {
+            Event event = optionalEvent.get();
+            if (event.getStatus() == Event.EventStatus.RETRY) {
+                event.setOpenUrl(openUrl);
+                eventRepository.save(event);
+                return ResponseEntity.ok(event);
+            } else {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null); // Only allow retry updates for RETRY status
+            }
+        }
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+    }
+
 
     @GetMapping
     public List<Event> getAllEvents() {
-        eventConsumerService.processPendingEvents();
         return eventRepository.findAll();
     }
 
@@ -43,38 +85,5 @@ public class EventController {
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
 
-//    @PostMapping("/auth")
-//    public ResponseEntity<String> authEndpoint(@RequestBody String payload) {
-//        return ResponseEntity.ok("Authorized request with payload: " + payload);
-//    }
-
-    @PostMapping("/token")
-    public ResponseEntity<String> tokenEndpoint(@RequestParam String payload) {
-        return ResponseEntity.ok("Token validated request with payload: " + payload);
-    }
-
-    @PostMapping("/create-with-id")
-    public ResponseEntity<String> createEventWithId(@RequestParam String payload, @RequestParam Long id) {
-        // Check if the ID already exists in the database
-        Optional<Event> existingEvent = eventRepository.findById(id);
-
-        if (existingEvent.isPresent()) {
-            // If the ID exists, return an error response
-            return ResponseEntity.status(HttpStatus.CONFLICT).body("Event with ID " + id + " already exists.");
-        }
-
-        // If the ID is unique, create a new event
-        Event newEvent = new Event();
-        newEvent.setId(id);
-        newEvent.setPayload(payload);
-        newEvent.setStatus(Event.EventStatus.PENDING); // Assuming the event starts in PENDING status
-        newEvent.setTimestamp(LocalDateTime.now());
-
-        // Save the event to the database
-        eventRepository.save(newEvent);
-
-        // Return a success response
-        return ResponseEntity.ok("Event created successfully with ID: " + id);
-    }
 
 }

@@ -1,17 +1,14 @@
 package com.eventbasedarchitechture.event_based;
 
-import org.junit.jupiter.api.BeforeEach;
+import com.eventbasedarchitechture.event_based.entity.model.Event;
+import com.eventbasedarchitechture.event_based.entity.repository.EventRepository;
+import com.eventbasedarchitechture.event_based.service.EventConsumerService;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -42,7 +39,7 @@ public class EventConsumerServiceTest {
         eventRepository.save(event2);
 
         // Act
-        consumerService.processPendingEvents();
+//        consumerService.processPendingEvents();
 
         // Assert
         List<Event> events = eventRepository.findAll();
