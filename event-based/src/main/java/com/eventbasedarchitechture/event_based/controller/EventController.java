@@ -66,7 +66,7 @@ public class EventController {
                 eventRepository.save(event);
                 return ResponseEntity.ok(event);
             } else {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null); // Only allow retry updates for RETRY status
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
             }
         }
         return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
