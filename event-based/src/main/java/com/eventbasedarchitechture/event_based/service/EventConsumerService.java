@@ -28,6 +28,7 @@ public class EventConsumerService {
     private EntityManager entityManager;
 
     private static final int MAX_ATTEMPTS = 3;
+    LocalDateTime now = LocalDateTime.now();
 
     @Transactional
     @Scheduled(fixedDelay = 30, timeUnit = TimeUnit.SECONDS)
@@ -35,9 +36,7 @@ public class EventConsumerService {
         List<Event> eventsPending = fetchPendingEvents();
         for (Event event : eventsPending) {
             String urlToCall = event.getOpenUrl();
-            if (event.getStatus() == Event.EventStatus.PENDING) {
-                processPendingEvent(event, urlToCall);
-            }
+                processEvent(event, urlToCall,now);
         }
     }
 
@@ -45,14 +44,17 @@ public class EventConsumerService {
     @Scheduled(fixedDelay = 45, timeUnit = TimeUnit.SECONDS)
     public void processFailedEvents(){
         List<Event> eventsToRetry = fetchRetryEventsWithinTimeWindow();
-        LocalDateTime now = LocalDateTime.now();
-
         for (Event event : eventsToRetry) {
             String urlToCall = event.getOpenUrl();
-            if (event.getStatus() == Event.EventStatus.RETRY) {
-                processRetryEvent(event, urlToCall, now);
-            }
+                processEvent(event, urlToCall, now);
         }
+    }
+
+    private List<Event> fetchPendingEvents() {
+        Query query = entityManager.createQuery("SELECT e FROM Event e WHERE e.status = :status")
+                .setParameter("status", Event.EventStatus.PENDING)
+                .setLockMode(jakarta.persistence.LockModeType.PESSIMISTIC_WRITE);
+        return query.getResultList();
     }
 
     private List<Event> fetchRetryEventsWithinTimeWindow() {
@@ -68,30 +70,10 @@ public class EventConsumerService {
         return query.getResultList();
     }
 
-    private void processPendingEvent(Event event, String urlToCall) {
-        try {
-            RestTemplate restTemplate = new RestTemplate();
-            ResponseEntity<String> response = restTemplate.getForEntity(urlToCall, String.class);
-
-            if (response.getStatusCode().is2xxSuccessful()) {
-                event.setStatus(Event.EventStatus.PROCESSED);
-            }
-        } catch (Exception e) {
-            log.error("Error processing event with URL: {}", urlToCall, e);
-            event.setStatus(Event.EventStatus.RETRY); // Set to retry on exception
-            event.setRetryTimestamp(LocalDateTime.now());
-            event.setAttempt(1);
-
-        } finally {
-            eventRepository.save(event);
-        }
-    }
-
-    private void processRetryEvent(Event event, String urlToCall, LocalDateTime now) {
+    private void processEvent(Event event, String urlToCall, LocalDateTime now) {
         long retryIntervalSeconds = 10L * event.getAttempt();
 
         if (event.getAttempt() < MAX_ATTEMPTS) {
-            if (event.getRetryTimestamp() == null || now.isAfter(event.getRetryTimestamp().plusSeconds(retryIntervalSeconds))) {
                 try {
                     RestTemplate restTemplate = new RestTemplate();
                     ResponseEntity<String> response = restTemplate.getForEntity(urlToCall, String.class);
@@ -99,22 +81,24 @@ public class EventConsumerService {
                     if (response.getStatusCode().is2xxSuccessful()) {
                         event.setStatus(Event.EventStatus.PROCESSED);
                     }
+                    else {
+                        if (now.isAfter(event.getRetryTimestamp().plusSeconds(retryIntervalSeconds)))
+                        {
+                        event.setStatus(Event.EventStatus.RETRY);
+                        event.setRetryTimestamp(now);
+                        event.setAttempt(event.getAttempt() + 1);
+                    }
+                    }
                 } catch (Exception e) {
                     log.error("Error processing retry event with URL: {}", urlToCall, e);
+                    event.setStatus(Event.EventStatus.RETRY);
                     event.setRetryTimestamp(now);
                     event.setAttempt(event.getAttempt() + 1);
                 }
-            }
         } else {
             event.setStatus(Event.EventStatus.FAILED);
         }
-        eventRepository.save(event); // Save event status after retry
+        eventRepository.save(event);
     }
 
-    private List<Event> fetchPendingEvents() {
-        Query query = entityManager.createQuery("SELECT e FROM Event e WHERE e.status = :status")
-                .setParameter("status", Event.EventStatus.PENDING)
-                .setLockMode(jakarta.persistence.LockModeType.PESSIMISTIC_WRITE);
-        return query.getResultList();
-    }
 }
